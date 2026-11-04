@@ -65,6 +65,50 @@
     <p>Aline has no other users and does not collect any data from viewers.</p>
     <p>YouTube: @PhenixCashMalin</p>
   </section>
+  <section>
+    <h2>Connect TikTok</h2>
+    <p>Authorize Aline to publish videos to your TikTok account. You will be sent to TikTok to log in and approve, then brought back here.</p>
+    <p><button id="connect" class="btn" type="button">Connect TikTok</button></p>
+    <div id="result" class="fr" hidden></div>
+  </section>
+  <style>
+    .btn { font: 600 17px var(--body); color: #fff; background: var(--accent); border: 0; border-radius: 10px; padding: 12px 22px; cursor: pointer; }
+    .btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+    #code { display: block; margin: 10px 0; padding: 10px; background: var(--bg); color: var(--fg); border: 1px solid var(--rule); border-radius: 8px; word-break: break-all; font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+  </style>
+  <script>
+    const CLIENT_KEY = "sbawauyj3tess4snzt";
+    const REDIRECT = "https://paoliankou-tech.github.io/";
+    const SCOPES = "user.info.basic,video.publish,video.upload,video.list";
+    const result = document.getElementById("result");
+    document.getElementById("connect").addEventListener("click", () => {
+      const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      try { sessionStorage.setItem("tt_state", state); } catch (e) {}
+      location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({
+        client_key: CLIENT_KEY, response_type: "code", scope: SCOPES, redirect_uri: REDIRECT, state
+      });
+    });
+    const params = new URLSearchParams(location.search);
+    if (params.get("code")) {
+      let expected = null;
+      try { expected = sessionStorage.getItem("tt_state"); } catch (e) {}
+      if (expected && expected !== params.get("state")) {
+        result.textContent = "This answer does not match the request. Please click Connect TikTok again.";
+      } else {
+        result.innerHTML = '<strong>TikTok is connected.</strong> Copy this code into Aline (valid a few minutes):' +
+          '<span id="code"></span><button id="copy" class="btn" type="button">Copy the code</button>';
+        document.getElementById("code").textContent = params.get("code");
+        document.getElementById("copy").addEventListener("click", async (ev) => {
+          try { await navigator.clipboard.writeText(params.get("code")); ev.target.textContent = "Copied"; }
+          catch (e) { getSelection().selectAllChildren(document.getElementById("code")); }
+        });
+      }
+      result.hidden = false;
+    } else if (params.get("error")) {
+      result.textContent = "TikTok did not connect: " + (params.get("error_description") || params.get("error"));
+      result.hidden = false;
+    }
+  </script>
   <div class="fr" lang="fr">
     <strong>En français :</strong> Aline est un outil privé de Phénix Cash Malin qui crée et publie des vidéos courtes sur ses propres comptes TikTok et YouTube. Les jetons d'accès et les statistiques restent sur l'ordinateur de l'exploitant, ne sont jamais vendus ni partagés, et aucune donnée des spectateurs n'est collectée. L'accès peut être retiré à tout moment depuis les paramètres TikTok ou Google.
   </div>
